@@ -7,7 +7,6 @@ import (
 	"time"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-
 	"github.com/Prototype-1/freelanceX_project.crm_service/internal/model" 
 )
 
@@ -44,5 +43,5 @@ func RunMigrations(db *gorm.DB) {
 		log.Fatal("Failed to migrate database:", err)
 	}
 
-	log.Println("📦 Database migrated successfully!")
+	log.Println("Database migrated successfully!")
 }
