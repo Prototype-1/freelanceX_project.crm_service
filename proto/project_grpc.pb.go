@@ -4,7 +4,7 @@
 // - protoc             v5.29.1
 // source: project.proto
 
-package projectPb
+package __
 
 import (
 	context "context"

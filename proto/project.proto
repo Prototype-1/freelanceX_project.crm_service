@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package project;
 
-option go_package = "./project;projectPb";
+option go_package = ".";
 
 import "google/protobuf/timestamp.proto";
 
