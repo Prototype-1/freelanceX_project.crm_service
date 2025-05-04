@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package project;
 
-option go_package = ".";
+option go_package = "github.com/Prototype-1/freelanceX_project.crm_service/proto/project;projectPb";  
 
 import "google/protobuf/timestamp.proto";
 
@@ -67,9 +67,7 @@ message GetProjectByIdResponse {
 }
 
 message DiscoverProjectsRequest {
-  repeated string skills = 1;
-  int32 experience_min = 2;
-  repeated string languages = 3;
+  string user_id = 1;
 }
 
 message DiscoverProject {
