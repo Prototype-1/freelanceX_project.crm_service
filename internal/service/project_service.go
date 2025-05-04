@@ -26,16 +26,21 @@ func NewProjectService(repo repository.ProjectRepository, profileClient profileP
 
 func (s *ProjectService) CreateProject(ctx context.Context, req *projectPb.CreateProjectRequest) (*projectPb.CreateProjectResponse, error) {
 	id := uuid.New()
+	clientUUID, err := uuid.Parse(req.ClientId)
+if err != nil {
+    return nil, fmt.Errorf("invalid client_id: %v", err)
+}
+
 	project := &models.Project{
 		ID:          id,
-		ClientID:    uuid.MustParse(req.ClientId),
+		ClientID:    clientUUID,
 		Title:       req.ProjectName,
 		Description: req.Description,
 		StartDate:   req.StartDate.AsTime(),
 		EndDate:     req.EndDate.AsTime(),
 		Status:      "ongoing",
 	}
-	err := s.repo.CreateProject(ctx, project)
+	err = s.repo.CreateProject(ctx, project)
 	if err != nil {
 		return nil, err
 	}

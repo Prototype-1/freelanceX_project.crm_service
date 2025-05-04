@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package freelanceX.crm;
+
+option go_package = "github.com/Prototype-1/freelanceX_project.crm_service/proto/client;clientpb";
+
+import "google/protobuf/timestamp.proto";
+
+service ClientService {
+  rpc CreateClient(CreateClientRequest) returns (CreateClientResponse);
+  rpc GetClient(GetClientRequest) returns (GetClientResponse);
+  rpc UpdateClient(UpdateClientRequest) returns (UpdateClientResponse);
+  rpc DeleteClient(DeleteClientRequest) returns (DeleteClientResponse);
+}
+
+message Client {
+  string id = 1;
+  string company_name = 2;
+  string contact_name = 3;
+  string email = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+message CreateClientRequest {
+  string company_name = 1;
+  string contact_name = 2;
+  string email = 3;
+}
+
+message CreateClientResponse {
+  Client client = 1;
+}
+
+message GetClientRequest {
+  string client_id = 1;
+}
+
+message GetClientResponse {
+  Client client = 1;
+}
+
+message UpdateClientRequest {
+  string client_id = 1;
+  string company_name = 2;
+  string contact_name = 3;
+  string email = 4;
+}
+
+message UpdateClientResponse {
+  Client client = 1;
+}
+
+message DeleteClientRequest {
+  string client_id = 1;
+}
+
+message DeleteClientResponse {
+  string status = 1;
+}
