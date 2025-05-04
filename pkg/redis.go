@@ -1,8 +1,9 @@
 package pkg
 
 import (
-	"github.com/redis/go-redis/v9"
 	"context"
+	"github.com/redis/go-redis/v9"
+	"log"
 	"os"
 )
 
@@ -13,4 +14,9 @@ func InitRedis() {
 	Rdb = redis.NewClient(&redis.Options{
 		Addr: os.Getenv("REDIS_ADDR"),
 	})
+
+	_, err := Rdb.Ping(Ctx).Result()
+	if err != nil {
+		log.Fatalf("Failed to connect to Redis: %v", err)
+	}
 }

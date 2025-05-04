@@ -9,6 +9,9 @@ import (
 	profilePb "github.com/Prototype-1/freelanceX_project.crm_service/proto/user_profile"
 	"github.com/google/uuid"
 	"fmt"
+	"time"
+	"encoding/json"
+	"github.com/Prototype-1/freelanceX_project.crm_service/pkg"
 )
 
 type ProjectService struct {
@@ -83,6 +86,16 @@ func (s *ProjectService) GetProjectById(ctx context.Context, req *projectPb.GetP
 }
 
 func (s *ProjectService) DiscoverProjects(ctx context.Context, req *projectPb.DiscoverProjectsRequest) (*projectPb.DiscoverProjectsResponse, error) {
+	cacheKey := "discover_projects:" + req.UserId
+	cached, err := pkg.Rdb.Get(pkg.Ctx, cacheKey).Result()
+	if err == nil && cached != "" {
+		var cachedRes projectPb.DiscoverProjectsResponse
+		err = json.Unmarshal([]byte(cached), &cachedRes)
+		if err == nil {
+			return &cachedRes, nil
+		}
+	}
+
 	profileResp, err := s.profileClient.GetProfile(ctx, &profilePb.GetProfileRequest{
 		UserId: req.UserId,
 	})
@@ -94,7 +107,6 @@ func (s *ProjectService) DiscoverProjects(ctx context.Context, req *projectPb.Di
 		return nil, err
 	}
 
-	// Populate response
 	res := &projectPb.DiscoverProjectsResponse{}
 	for _, proj := range projects {
 		res.Projects = append(res.Projects, &projectPb.DiscoverProject{
@@ -106,6 +118,9 @@ func (s *ProjectService) DiscoverProjects(ctx context.Context, req *projectPb.Di
 			EndDate:     timestamppb.New(proj.EndDate),
 		})
 	}
+	jsonData, _ := json.Marshal(res)
+	_ = pkg.Rdb.Set(pkg.Ctx, cacheKey, jsonData, 10*time.Minute).Err()
+
 	return res, nil
 }
 
@@ -125,6 +140,8 @@ func (s *ProjectService) AssignFreelancer(ctx context.Context, req *projectPb.As
 	if err != nil {
 		return nil, err
 	}
+
+	pkg.Rdb.Del(pkg.Ctx, "discover_projects:"+req.FreelancerId)
 
 	return &projectPb.AssignFreelancerResponse{
 		ProjectId:    req.ProjectId,
