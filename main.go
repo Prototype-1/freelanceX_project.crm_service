@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	projectPb "github.com/Prototype-1/freelanceX_project.crm_service/proto/project" 
+	clientpb "github.com/Prototype-1/freelanceX_project.crm_service/proto/client" 
 	"github.com/Prototype-1/freelanceX_project.crm_service/migrations"
 	"github.com/Prototype-1/freelanceX_project.crm_service/internal/repository"
 	"github.com/Prototype-1/freelanceX_project.crm_service/internal/service"
@@ -26,6 +27,9 @@ func main() {
 
 	redisDb.InitRedis()
 
+	clientRepo := repository.NewClientRepository(db)
+clientSvc := service.NewClientService(clientRepo)
+
 	projectRepo := repository.NewProjectRepository(db)
 	profileClient := client.NewProfileServiceClient() 
 	projectService := service.NewProjectService(projectRepo, profileClient)
@@ -42,6 +46,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	projectPb.RegisterProjectServiceServer(grpcServer, projectService)
+	clientpb.RegisterClientServiceServer(grpcServer, clientSvc)
 
 	log.Printf("gRPC server is running on port %s", port)
 	if err := grpcServer.Serve(lis); err != nil {
