@@ -2,11 +2,13 @@ package service
 
 import (
 	"context"
+	"errors"
 	"github.com/Prototype-1/freelanceX_project.crm_service/internal/repository"
 	"github.com/Prototype-1/freelanceX_project.crm_service/internal/model"
 	clientpb "github.com/Prototype-1/freelanceX_project.crm_service/proto/client"
 "github.com/google/uuid"
-	"google.golang.org/protobuf/types/known/timestamppb"
+"google.golang.org/grpc/metadata"
+"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func parseUUID(id string) uuid.UUID {
@@ -24,6 +26,16 @@ func NewClientService(repo repository.ClientRepository) *ClientService {
 }
 
 func (s *ClientService) CreateClient(ctx context.Context, req *clientpb.CreateClientRequest) (*clientpb.CreateClientResponse, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errors.New("missing metadata")
+	}
+
+	roles := md.Get("role")
+	if len(roles) == 0 || roles[0] != "client" {
+		return nil, errors.New("unauthorized: only clients can create clients")
+	}
+	
 	client := &models.Client{
 		CompanyName: req.CompanyName,
 		ContactName: req.ContactName,
