@@ -10,6 +10,5 @@ type ProjectFreelancer struct {
 	ProjectID    uuid.UUID `gorm:"type:uuid;not null"`
 	FreelancerID uuid.UUID `gorm:"type:uuid;not null"`
 	AssignedAt   time.Time `gorm:"autoCreateTime"`
-
 	ProjectIDRef Project `gorm:"foreignKey:ProjectID;constraint:OnDelete:CASCADE"`
 }

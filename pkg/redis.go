@@ -20,3 +20,4 @@ func InitRedis() {
 		log.Fatalf("Failed to connect to Redis: %v", err)
 	}
 }
+

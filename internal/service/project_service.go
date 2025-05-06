@@ -12,6 +12,8 @@ import (
 	"time"
 	"encoding/json"
 	"github.com/Prototype-1/freelanceX_project.crm_service/pkg"
+	"google.golang.org/grpc/metadata"
+	"errors"
 )
 
 type ProjectService struct {
@@ -25,6 +27,15 @@ func NewProjectService(repo repository.ProjectRepository, profileClient profileP
 }
 
 func (s *ProjectService) CreateProject(ctx context.Context, req *projectPb.CreateProjectRequest) (*projectPb.CreateProjectResponse, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errors.New("missing metadata")
+	}
+	roles := md.Get("role")
+	fmt.Println("Role from metadata: ", roles)
+	if len(roles) == 0 || roles[0] != "client" {
+		return nil, fmt.Errorf("unauthorized: only clients are allowed to create projects")
+	}
 	id := uuid.New()
 	clientUUID, err := uuid.Parse(req.ClientId)
 if err != nil {
@@ -52,6 +63,15 @@ if err != nil {
 }
 
 func (s *ProjectService) GetProjectsByUser(ctx context.Context, req *projectPb.GetProjectsByUserRequest) (*projectPb.GetProjectsByUserResponse, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errors.New("missing metadata")
+	}
+	roles := md.Get("role")
+	if len(roles) == 0 || (roles[0] != "admin" && roles[0] != "client") {
+		return nil, fmt.Errorf("unauthorized: only admins or clients will get the info")
+	}
+
 	projects, err := s.repo.GetProjectsByClientID(ctx, req.UserId)
 	if err != nil {
 		return nil, err
@@ -72,6 +92,15 @@ func (s *ProjectService) GetProjectsByUser(ctx context.Context, req *projectPb.G
 }
 
 func (s *ProjectService) GetProjectById(ctx context.Context, req *projectPb.GetProjectByIdRequest) (*projectPb.GetProjectByIdResponse, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errors.New("missing metadata")
+	}
+	roles := md.Get("role")
+	if len(roles) == 0 || (roles[0] != "admin" && roles[0] != "client" && roles[0] != "freelancer") {
+		return nil, fmt.Errorf("unauthorized: only admins or clients will get the info")
+	}
+
 	project, err := s.repo.GetProjectByID(ctx, req.ProjectId)
 	if err != nil {
 		return nil, err
@@ -91,6 +120,15 @@ func (s *ProjectService) GetProjectById(ctx context.Context, req *projectPb.GetP
 }
 
 func (s *ProjectService) DiscoverProjects(ctx context.Context, req *projectPb.DiscoverProjectsRequest) (*projectPb.DiscoverProjectsResponse, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errors.New("missing metadata")
+	}
+	roles := md.Get("role")
+	if len(roles) == 0 || roles[0] != "freelancer" {
+		return nil, fmt.Errorf("unauthorized: only freelancers can discover projects")
+	}
+
 	cacheKey := "discover_projects:" + req.UserId
 	cached, err := pkg.Rdb.Get(pkg.Ctx, cacheKey).Result()
 	if err == nil && cached != "" {
@@ -130,6 +168,15 @@ func (s *ProjectService) DiscoverProjects(ctx context.Context, req *projectPb.Di
 }
 
 func (s *ProjectService) AssignFreelancer(ctx context.Context, req *projectPb.AssignFreelancerRequest) (*projectPb.AssignFreelancerResponse, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errors.New("missing metadata")
+	}
+	roles := md.Get("role")
+	if len(roles) == 0 || roles[0] != "client" {
+		return nil, fmt.Errorf("unauthorized: only clients can assign freelancers")
+	}
+
 	profileResp, err := s.profileClient.GetProfile(ctx, &profilePb.GetProfileRequest{
 		UserId: req.FreelancerId,
 	})
@@ -156,6 +203,15 @@ func (s *ProjectService) AssignFreelancer(ctx context.Context, req *projectPb.As
 }
 
 func (s *ProjectService) UpdateProject(ctx context.Context, req *projectPb.UpdateProjectRequest) (*projectPb.UpdateProjectResponse, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errors.New("missing metadata")
+	}
+	roles := md.Get("role")
+	if len(roles) == 0 || roles[0] != "client" {
+		return nil, fmt.Errorf("unauthorized: only clients can update freelancers")
+	}
+
 	updateMap := map[string]interface{}{
 		"title":       req.ProjectName,
 		"description": req.Description,
@@ -173,6 +229,16 @@ func (s *ProjectService) UpdateProject(ctx context.Context, req *projectPb.Updat
 }
 
 func (s *ProjectService) DeleteProject(ctx context.Context, req *projectPb.DeleteProjectRequest) (*projectPb.DeleteProjectResponse, error) {
+	
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errors.New("missing metadata")
+	}
+	roles := md.Get("role")
+	if len(roles) == 0 || (roles[0] != "admin" && roles[0] != "client") {
+		return nil, fmt.Errorf("unauthorized: only admins or clients can do this operation")
+	}
+
 	err := s.repo.DeleteProject(ctx, req.ProjectId)
 	if err != nil {
 		return nil, err

@@ -33,9 +33,9 @@ func (s *ClientService) CreateClient(ctx context.Context, req *clientpb.CreateCl
 
 	roles := md.Get("role")
 	if len(roles) == 0 || roles[0] != "client" {
-		return nil, errors.New("unauthorized: only clients can create clients")
+		return nil, errors.New("unauthorized: only clients can create client details")
 	}
-	
+
 	client := &models.Client{
 		CompanyName: req.CompanyName,
 		ContactName: req.ContactName,
@@ -52,6 +52,15 @@ func (s *ClientService) CreateClient(ctx context.Context, req *clientpb.CreateCl
 }
 
 func (s *ClientService) GetClient(ctx context.Context, req *clientpb.GetClientRequest) (*clientpb.GetClientResponse, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errors.New("missing metadata")
+	}
+
+	roles := md.Get("role")
+if len(roles) == 0 || (roles[0] != "client" && roles[0] != "admin") {
+    return nil, errors.New("unauthorized: only clients or admins are allowed")
+}
 	client, err := s.repo.GetByID(ctx, req.ClientId)
 	if err != nil {
 		return nil, err
@@ -63,11 +72,27 @@ func (s *ClientService) GetClient(ctx context.Context, req *clientpb.GetClientRe
 }
 
 func (s *ClientService) UpdateClient(ctx context.Context, req *clientpb.UpdateClientRequest) (*clientpb.UpdateClientResponse, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errors.New("missing metadata")
+	}
+
+	roles := md.Get("role")
+	if len(roles) == 0 || roles[0] != "client" {
+		return nil, errors.New("unauthorized: only clients can update client details")
+}
+
+existing, err := s.repo.GetByID(ctx, req.ClientId)
+if err != nil {
+    return nil, err
+}
+
 	client := &models.Client{
 		ID:          parseUUID(req.ClientId),
 		CompanyName: req.CompanyName,
 		ContactName: req.ContactName,
 		Email:       req.Email,
+		CreatedAt:   existing.CreatedAt, 
 	}
 
 	if err := s.repo.Update(ctx, client); err != nil {
@@ -80,6 +105,16 @@ func (s *ClientService) UpdateClient(ctx context.Context, req *clientpb.UpdateCl
 }
 
 func (s *ClientService) DeleteClient(ctx context.Context, req *clientpb.DeleteClientRequest) (*clientpb.DeleteClientResponse, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, errors.New("missing metadata")
+	}
+
+	roles := md.Get("role")
+	if len(roles) == 0 || (roles[0] != "client" && roles[0] != "admin") {
+		return nil, errors.New("unauthorized: only clients or admins are allowed")
+}
+
 	err := s.repo.Delete(ctx, req.ClientId)
 	if err != nil {
 		return nil, err
