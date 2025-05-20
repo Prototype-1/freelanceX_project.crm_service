@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package project;
 
-option go_package = "github.com/Prototype-1/freelanceX_project.crm_service/proto/project;projectPb";  
+option go_package = ".";
 
 import "google/protobuf/timestamp.proto";
 
@@ -24,6 +24,9 @@ message CreateProjectRequest {
   string description = 3;
   google.protobuf.Timestamp start_date = 4;
   google.protobuf.Timestamp end_date = 5;
+  repeated string required_skills = 6;
+  int32 min_experience = 7;
+  repeated string required_languages = 8;
 }
 
 message CreateProjectResponse {
@@ -99,6 +102,9 @@ message UpdateProjectRequest {
   string project_name = 2;
   string description = 3;
   google.protobuf.Timestamp end_date = 4;
+  repeated string required_skills = 5;
+  int32 min_experience = 6;
+  repeated string required_languages = 7;
 }
 
 message UpdateProjectResponse {

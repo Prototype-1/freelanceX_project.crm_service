@@ -42,15 +42,18 @@ if err != nil {
     return nil, fmt.Errorf("invalid client_id: %v", err)
 }
 
-	project := &models.Project{
-		ID:          id,
-		ClientID:    clientUUID,
-		Title:       req.ProjectName,
-		Description: req.Description,
-		StartDate:   req.StartDate.AsTime(),
-		EndDate:     req.EndDate.AsTime(),
-		Status:      "ongoing",
-	}
+project := &models.Project{
+	ID:                id,
+	ClientID:          clientUUID,
+	Title:             req.ProjectName,
+	Description:       req.Description,
+	StartDate:         req.StartDate.AsTime(),
+	EndDate:           req.EndDate.AsTime(),
+	Status:            "ongoing",
+	RequiredSkills:    req.RequiredSkills,
+	MinExperience:     req.MinExperience,
+	RequiredLanguages: req.RequiredLanguages,
+}
 	err = s.repo.CreateProject(ctx, project)
 	if err != nil {
 		return nil, err
@@ -212,11 +215,14 @@ func (s *ProjectService) UpdateProject(ctx context.Context, req *projectPb.Updat
 		return nil, fmt.Errorf("unauthorized: only clients can update freelancers")
 	}
 
-	updateMap := map[string]interface{}{
-		"title":       req.ProjectName,
-		"description": req.Description,
-		"end_date":    req.EndDate.AsTime(),
-	}
+updateMap := map[string]interface{}{
+	"title":             req.ProjectName,
+	"description":       req.Description,
+	"end_date":          req.EndDate.AsTime(),
+	"required_skills":   req.RequiredSkills,
+	"min_experience":    req.MinExperience,
+	"required_languages": req.RequiredLanguages,
+}
 	err := s.repo.UpdateProject(ctx, req.ProjectId, updateMap)
 	if err != nil {
 		return nil, err
