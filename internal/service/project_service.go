@@ -236,7 +236,7 @@ func (s *ProjectService) DeleteProject(ctx context.Context, req *projectPb.Delet
 	}
 	roles := md.Get("role")
 	if len(roles) == 0 || (roles[0] != "admin" && roles[0] != "client") {
-		return nil, fmt.Errorf("unauthorized: only admins or clients can do this operation")
+		return nil, fmt.Errorf("unauthorized: only admins or clients can delete a project from the system")
 	}
 
 	err := s.repo.DeleteProject(ctx, req.ProjectId)
