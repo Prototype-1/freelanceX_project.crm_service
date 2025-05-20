@@ -38,7 +38,7 @@ message GetProjectsByUserRequest {
 message ProjectSummary {
   string project_id = 1;
   string project_name = 2;
-  string role = 3; // "client" or "freelancer"
+  string role = 3; 
   google.protobuf.Timestamp start_date = 4;
   google.protobuf.Timestamp end_date = 5;
 }

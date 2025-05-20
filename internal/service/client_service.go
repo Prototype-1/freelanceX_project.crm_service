@@ -36,7 +36,18 @@ func (s *ClientService) CreateClient(ctx context.Context, req *clientpb.CreateCl
 		return nil, errors.New("unauthorized: only clients can create client details")
 	}
 
+	    userIDs := md.Get("user_id")
+    if len(userIDs) == 0 {
+        return nil, errors.New("missing user ID in metadata")
+    }
+    
+    userID, err := uuid.Parse(userIDs[0])
+    if err != nil {
+        return nil, errors.New("invalid user ID format")
+    }
+
 	client := &models.Client{
+		ID:          userID,
 		CompanyName: req.CompanyName,
 		ContactName: req.ContactName,
 		Email:       req.Email,
