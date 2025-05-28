@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Prototype-1/freelanceX_project.crm_service/internal/model"
 	"gorm.io/gorm"
+	 "github.com/lib/pq"
 )
 
 type ProjectRepository interface {
@@ -55,13 +56,12 @@ func (r *projectRepository) AssignFreelancer(ctx context.Context, projectID, fre
 
 func (r *projectRepository) DiscoverProjects(ctx context.Context, skills []string, languages []string, experienceMin int32) ([]models.Project, error) {
 	var projects []models.Project
-
 	err := r.db.WithContext(ctx).
-		Where("status = ?", "ongoing").
-		Where("required_skills && ?", skills).
-		Where("required_languages && ?", languages).
-		Where("min_experience <= ?", experienceMin). 
-		Find(&projects).Error
+    Where("status = ?", "ongoing").
+    Where("required_skills && ?", pq.Array(skills)).
+    Where("required_languages && ?", pq.Array(languages)).
+    Where("min_experience <= ?", experienceMin).
+    Find(&projects).Error
 
 	return projects, err
 }

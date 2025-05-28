@@ -141,10 +141,12 @@ func (s *ProjectService) DiscoverProjects(ctx context.Context, req *projectPb.Di
 			return &cachedRes, nil
 		}
 	}
+	md, _ = metadata.FromIncomingContext(ctx)
+outCtx := metadata.NewOutgoingContext(context.Background(), md)
+profileResp, err := s.profileClient.GetProfile(outCtx, &profilePb.GetProfileRequest{
+    UserId: req.UserId,
+})
 
-	profileResp, err := s.profileClient.GetProfile(ctx, &profilePb.GetProfileRequest{
-		UserId: req.UserId,
-	})
 	if err != nil {
 		return nil, err
 	}
