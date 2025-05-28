@@ -9,6 +9,7 @@ import (
 	profilePb "github.com/Prototype-1/freelanceX_project.crm_service/proto/user_profile"
 	"github.com/google/uuid"
 	"fmt"
+	"log"
 	"time"
 	"encoding/json"
 	"github.com/Prototype-1/freelanceX_project.crm_service/pkg"
@@ -100,7 +101,7 @@ func (s *ProjectService) GetProjectById(ctx context.Context, req *projectPb.GetP
 		return nil, errors.New("missing metadata")
 	}
 	roles := md.Get("role")
-	if len(roles) == 0 || (roles[0] != "admin" && roles[0] != "client" && roles[0] != "freelancer") {
+	if len(roles) == 0 || (roles[0] != "admin" && roles[0] != "client") {
 		return nil, fmt.Errorf("unauthorized: only admins or clients will get the info")
 	}
 
@@ -181,10 +182,14 @@ func (s *ProjectService) AssignFreelancer(ctx context.Context, req *projectPb.As
 	if len(roles) == 0 || roles[0] != "client" {
 		return nil, fmt.Errorf("unauthorized: only clients can assign freelancers")
 	}
+	log.Printf("Calling GetProfile for %s with role: %v", req.FreelancerId, roles)
+	log.Printf("[AssignFreelancer] freelancer_id: '%s'", req.FreelancerId)
+	md, _ = metadata.FromIncomingContext(ctx)
+outCtx := metadata.NewOutgoingContext(context.Background(), md)
 
-	profileResp, err := s.profileClient.GetProfile(ctx, &profilePb.GetProfileRequest{
-		UserId: req.FreelancerId,
-	})
+profileResp, err := s.profileClient.GetProfile(outCtx, &profilePb.GetProfileRequest{
+	UserId: req.FreelancerId,
+})
 	if err != nil {
 		return nil, err
 	}

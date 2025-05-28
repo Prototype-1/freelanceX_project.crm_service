@@ -5,6 +5,7 @@ import (
 	"github.com/Prototype-1/freelanceX_project.crm_service/internal/model"
 	"gorm.io/gorm"
 	 "github.com/lib/pq"
+	 "strings"
 )
 
 type ProjectRepository interface {
@@ -26,6 +27,14 @@ func NewProjectRepository(db *gorm.DB) ProjectRepository {
 	return &projectRepository{db: db}
 }
 
+func toPGArray(arr []string) string {
+	escaped := make([]string, len(arr))
+	for i, v := range arr {
+		escaped[i] = `"` + strings.ReplaceAll(v, `"`, `\"`) + `"`
+	}
+	return "{" + strings.Join(escaped, ",") + "}"
+}
+
 func (r *projectRepository) CreateProject(ctx context.Context, project *models.Project) error {
 	return r.db.WithContext(ctx).Create(project).Error
 }
@@ -43,6 +52,16 @@ func (r *projectRepository) GetProjectByID(ctx context.Context, projectID string
 }
 
 func (r *projectRepository) UpdateProject(ctx context.Context, projectID string, updated map[string]interface{}) error {
+	if skills, ok := updated["required_skills"]; ok {
+		if sArr, ok := skills.([]string); ok {
+			updated["required_skills"] = gorm.Expr("?::text[]", toPGArray(sArr))
+		}
+	}
+	if langs, ok := updated["required_languages"]; ok {
+		if lArr, ok := langs.([]string); ok {
+			updated["required_languages"] = gorm.Expr("?::text[]", toPGArray(lArr))
+		}
+	}
 	return r.db.WithContext(ctx).Model(&models.Project{}).Where("id = ?", projectID).Updates(updated).Error
 }
 
