@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crm-service
+  labels:
+    app: crm-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crm-service
+  template:
+    metadata:
+      labels:
+        app: crm-service
+    spec:
+      containers:
+        - name: crm-service
+          image: aswinputhukaatil/freelancex_crm_service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 50053
+          env:
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: crm-service-secret
+                  key: JWT_SECRET
+            - name: USER_SERVICE_ADDR
+              valueFrom:
+                secretKeyRef:
+                  name: crm-service-secret
+                  key: USER_SERVICE_ADDR
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: crm-service-secret
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: crm-service-secret
+                  key: DB_PORT
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: crm-service-secret
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: crm-service-secret
+                  key: DB_PASSWORD
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: crm-service-secret
+                  key: DB_NAME
+            - name: PORT
+              valueFrom:
+                secretKeyRef:
+                  name: crm-service-secret
+                  key: PORT
+            - name: REDIS_ADDR
+              valueFrom:
+                secretKeyRef:
+                  name: crm-service-secret
+                  key: REDIS_ADDR
