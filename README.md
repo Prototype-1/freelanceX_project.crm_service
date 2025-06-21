@@ -9,20 +9,6 @@ Both freelancer and clients have their own part here but for freelancers its lim
 - PostgreSQL
 - Protocol Buffers
 
-## Folder Structure
-
-.
-├── config/
-├── handler/
-├── model/
-├── proto/
-├── repository/
-├── service/
-├── scripts/
-├── main.go
-└── go.mod
-
-
 ## Setup
 
 ###  Clone & Navigate
