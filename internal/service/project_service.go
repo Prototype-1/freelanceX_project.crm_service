@@ -101,8 +101,8 @@ func (s *ProjectService) GetProjectById(ctx context.Context, req *projectPb.GetP
 		return nil, errors.New("missing metadata")
 	}
 	roles := md.Get("role")
-	if len(roles) == 0 || (roles[0] != "admin" && roles[0] != "client") {
-		return nil, fmt.Errorf("unauthorized: only admins or clients will get the info")
+	if len(roles) == 0 || (roles[0] != "admin" && roles[0] != "client" && roles[0] != "freelancer") {
+		return nil, fmt.Errorf("Unauthorized")
 	}
 
 	project, err := s.repo.GetProjectByID(ctx, req.ProjectId)
