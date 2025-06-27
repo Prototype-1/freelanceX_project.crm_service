@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 	 "github.com/lib/pq"
 	 "strings"
+	 "github.com/google/uuid"
 )
 
 type ProjectRepository interface {
@@ -16,7 +17,6 @@ type ProjectRepository interface {
 DeleteProject(ctx context.Context, projectID string) error
 AssignFreelancer(ctx context.Context, projectID, freelancerID string) error
 DiscoverProjects(ctx context.Context, skills []string, languages []string, experienceMin int32) ([]models.Project, error)
-
 }
 
 type projectRepository struct {
@@ -70,8 +70,23 @@ func (r *projectRepository) DeleteProject(ctx context.Context, projectID string)
 }
 
 func (r *projectRepository) AssignFreelancer(ctx context.Context, projectID, freelancerID string) error {
-	return r.db.WithContext(ctx).Exec("INSERT INTO project_freelancers (project_id, freelancer_id) VALUES (?, ?)", projectID, freelancerID).Error
+	projectUUID, err := uuid.Parse(projectID)
+	if err != nil {
+		return err
+	}
+	freelancerUUID, err := uuid.Parse(freelancerID)
+	if err != nil {
+		return err
+	}
+
+	entry := &models.ProjectFreelancer{
+		ProjectID:    projectUUID,
+		FreelancerID: freelancerUUID,
+	}
+
+	return r.db.WithContext(ctx).Create(entry).Error
 }
+
 
 func (r *projectRepository) DiscoverProjects(ctx context.Context, skills []string, languages []string, experienceMin int32) ([]models.Project, error) {
 	var projects []models.Project
